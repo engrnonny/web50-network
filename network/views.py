@@ -1,14 +1,22 @@
+
+
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .models import User
+from .models import *
 
 
 def index(request):
-    return render(request, "network/index.html")
+    posts = Post.objects.all().order_by('-date_added')
+    context = {
+        'posts': posts
+    }
+    print(posts)
+    return render(request, "network/index.html", context)
 
 
 def login_view(request):
@@ -61,3 +69,21 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+
+@login_required
+def new_post(request):
+    if request.method == "POST":
+        body = request.POST["body"]
+        if body:
+            post = Post(body=body, user=request.user)
+            post.save()
+            return redirect("index")
+        else:
+            pass
+
+
+@login_required
+def user_profile(request, slug):
+    posts = Post.objects.filter(user=request.user).order_by('-date_added')
+    return render(request, "network/register.html")

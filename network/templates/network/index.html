@@ -1,5 +1,34 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    TODO
+<main>
+    {% if user.is_authenticated %}
+        <h2>New Post</h2>
+        <form action="{% url 'new-post' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <textarea autofocus class="form-control" type="text" name="body" placeholder="Write your post here"></textarea>
+            </div>
+            <input class="btn btn-primary" type="submit" value="Post">
+        </form>
+    {% endif %}
+
+    <div>
+        {% if posts %}
+            <h2>All Posts</h2>
+            {% for post in posts %}
+                <div>
+                    <div>
+                        <div>{{ post.user }} posted on {{ post.date_added }}</div>
+                        <div>
+                            {{ post.body }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</main>
+
 {% endblock %}
+        
