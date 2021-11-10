@@ -3,7 +3,29 @@
 {% block body %}
 <main>
     {% if user.is_authenticated %}
-        <h2>user.username</h2>
+    <div>
+        <h2>{{ profile_user.username }}</h2>
+        {% if following %}
+            <a href="{% url 'follow-or-unfollow' profile_user.username %}">Unfollow</a>
+        {% else %}
+            <a href="{% url 'follow-or-unfollow' profile_user.username %}">Follow</a>
+        {% endif %}
+    </div>
+    <div>
+        {% if posts %}
+            {% for post in posts %}
+                <div>
+
+                </div>
+                <div>
+                    <div>{{ post.user }} posted on {{ post.date_added }}</div>
+                    <div>
+                        {{ post.body }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
         
     {% endif %}
 </main>

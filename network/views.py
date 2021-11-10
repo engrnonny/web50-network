@@ -71,6 +71,9 @@ def register(request):
         return render(request, "network/register.html")
 
 
+# New Post
+# New Post
+# New Post
 @login_required
 def new_post(request):
     if request.method == "POST":
@@ -83,7 +86,78 @@ def new_post(request):
             pass
 
 
+# User Profile Page
+# User Profile Page
+# User Profile Page
 @login_required
 def user_profile(request, slug):
-    posts = Post.objects.filter(user=request.user).order_by('-date_added')
-    return render(request, "network/register.html")
+    profile_user = User.objects.get(username=slug)
+    if profile_user:
+        try:
+            posts = Post.objects.filter(user=profile_user).order_by('-date_added')
+            followee = Follower.objects.get(user=profile_user)
+            followers = len(User.objects.filter(followers__id=followee.id))
+            following = len(User.objects.filter(following__id=followee.id))
+            print(followers)
+            print(following)
+            context = {
+                'followers': followers,
+                'posts': posts,
+                'profile_user': profile_user
+            }
+        except IntegrityError:
+            pass
+        return render(request, "network/user-profile.html", context)
+        
+
+    else:
+        pass
+
+    
+# Follow and unfollow
+# Follow and unfollow
+# Follow and unfollow
+@login_required
+def follow_or_unfollow(request, slug):
+    followee = User.objects.get(username=slug)
+    follower = User.objects.get(username=request.user)
+
+    # Checks that the current user's profile isn't the profile to be followed.
+    if followee == follower:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+    # Checks that the followee (current profile being viewed), has a Follower object
+    elif Follower.objects.filter(user=followee).exists():
+        follow = Follower.objects.get(user=followee)
+        followed = User.objects.filter(followers__id=follow.id)
+
+        # Follows or unfollows the followee
+        if followed:
+            follow.followers.remove(follower)
+        else:
+            follow.followers.add(follower)
+
+        # Checks that the follower (current logged in user), has a Follower object
+        if Follower.objects.filter(user=follower).exists():
+            following = Follower.objects.get(user=follower)
+            followings = User.objects.filter(following__id=follow.id)
+
+            # Adds or removes the followee
+            if followings:
+                following.following.remove(followee)
+            else:
+                following.following.add(followee)
+            
+        # Creates a Follower object if none exist for the follower
+        else:
+            follow = Follower(user=follower)
+            follow.save()
+            follow.following.add(followee)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+    # Creates a Follower object if none exist for the followee
+    else:
+        follow = Follower(user=followee)
+        follow.save()
+        follow.followers.add(follower)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
