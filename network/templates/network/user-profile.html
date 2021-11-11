@@ -5,11 +5,22 @@
     {% if user.is_authenticated %}
     <div>
         <h2>{{ profile_user.username }}</h2>
-        {% if following %}
-            <a href="{% url 'follow-or-unfollow' profile_user.username %}">Unfollow</a>
-        {% else %}
-            <a href="{% url 'follow-or-unfollow' profile_user.username %}">Follow</a>
+        {% if user != profile_user %}
+            {% if followed %}
+                <a href="{% url 'follow-or-unfollow' profile_user.username %}">Unfollow</a>
+            {% else %}
+                <a href="{% url 'follow-or-unfollow' profile_user.username %}">Follow</a>
+            {% endif %}
         {% endif %}
+
+    </div>
+    <div>
+        <span>
+            followers: {{ followers }}
+        </span>
+        <span>
+            <a href="{% url "following" >following: {{ following }}</a>
+        </span>
     </div>
     <div>
         {% if posts %}

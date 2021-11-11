@@ -15,7 +15,6 @@ def index(request):
     context = {
         'posts': posts
     }
-    print(posts)
     return render(request, "network/index.html", context)
 
 
@@ -98,10 +97,12 @@ def user_profile(request, slug):
             followee = Follower.objects.get(user=profile_user)
             followers = len(User.objects.filter(followers__id=followee.id))
             following = len(User.objects.filter(following__id=followee.id))
-            print(followers)
-            print(following)
+            followed = User.objects.filter(followers__id=followee.id, id=request.user.id)
+            
             context = {
+                'followed': followed,
                 'followers': followers,
+                'following': following,
                 'posts': posts,
                 'profile_user': profile_user
             }
@@ -140,10 +141,10 @@ def follow_or_unfollow(request, slug):
         # Checks that the follower (current logged in user), has a Follower object
         if Follower.objects.filter(user=follower).exists():
             following = Follower.objects.get(user=follower)
-            followings = User.objects.filter(following__id=follow.id)
+            followed = User.objects.filter(following__id=following.id, id=followee.id)
 
             # Adds or removes the followee
-            if followings:
+            if followed:   
                 following.following.remove(followee)
             else:
                 following.following.add(followee)
