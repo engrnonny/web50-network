@@ -1,7 +1,7 @@
 
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -12,7 +12,11 @@ from .models import *
 
 def index(request):
     posts = Post.objects.all().order_by('-date_added')
+    paginator = Paginator(posts, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
+        'page_obj': page_obj,
         'posts': posts
     }
     return render(request, "network/index.html", context)
@@ -94,15 +98,22 @@ def user_profile(request, slug):
     if profile_user:
         try:
             posts = Post.objects.filter(user=profile_user).order_by('-date_added')
+
+            
+            paginator = Paginator(posts, 10) 
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+
             followee = Follower.objects.get(user=profile_user)
             followers = len(User.objects.filter(followers__id=followee.id))
             following = len(User.objects.filter(following__id=followee.id))
             followed = User.objects.filter(followers__id=followee.id, id=request.user.id)
-            
+
             context = {
                 'followed': followed,
                 'followers': followers,
                 'following': following,
+                'page_obj': page_obj,
                 'posts': posts,
                 'profile_user': profile_user
             }
@@ -162,3 +173,57 @@ def follow_or_unfollow(request, slug):
         follow.save()
         follow.followers.add(follower)
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+# Following Page
+# Following Page
+# Following Page
+@login_required
+def following(request):
+    if Follower.objects.filter(user=request.user).exists():
+        following_object = Follower.objects.get(user=request.user)
+        followings = User.objects.filter(following__id=following_object.id)
+        print(followings)
+        posts = []
+        for following in followings:
+            following_posts = Post.objects.filter(user=following)
+            for post in following_posts:
+                posts.append(post)
+        
+        paginator = Paginator(posts, 10) 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context = {
+            'page_obj': page_obj,
+            'posts': posts
+        }
+        return render(request, "network/following.html", context)
+    else:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+# Edit Post
+# Edit Post
+# Edit Post
+@login_required
+def edit_post(request, slug):
+    try:
+        post = Post.objects.get(id=slug)
+        if request.user == post.user:
+            if request.method == "POST":
+                body = request.POST["body"]
+                post = Post.objects.get(id=slug)
+                post.body = body
+                post.save()
+                return redirect("index")
+
+            else:
+                context = {
+                    'post': post
+                }
+                return render(request, "network/edit-post.html", context)
+        else:
+            return redirect("index")
+
+    except IntegrityError:
+        return redirect("index")
