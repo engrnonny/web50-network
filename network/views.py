@@ -234,10 +234,12 @@ def edit_post(request, post_id):
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
 
-    # Check recipient emails
-    data = json.loads(request.body)
-    body = data.get("body", "")
     post = Post.objects.get(id=post_id)
-    post.body = body
-    post.save()
-    return JsonResponse({"message": "Post updated successfully."}, status=201)
+    if post.user == request.user:
+        data = json.loads(request.body)
+        body = data.get("body", "")
+        post.body = body
+        post.save()
+        return JsonResponse({"message": "Post updated successfully."}, status=201)
+    else:
+        return redirect("index")

@@ -26,6 +26,7 @@
         {% if posts %}
             {% for post in page_obj %}
                 <div>
+                    {% csrf_token %}
                     <div>{{ post.user }} posted on {{ post.date_added }}</div>
                     <div id="body{{post.id}}">
                         {{ post.body }} 
