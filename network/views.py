@@ -1,11 +1,13 @@
 
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
 
@@ -205,25 +207,37 @@ def following(request):
 # Edit Post
 # Edit Post
 # Edit Post
+@csrf_exempt
 @login_required
-def edit_post(request, slug):
-    try:
-        post = Post.objects.get(id=slug)
-        if request.user == post.user:
-            if request.method == "POST":
-                body = request.POST["body"]
-                post = Post.objects.get(id=slug)
-                post.body = body
-                post.save()
-                return redirect("index")
+def edit_post(request, post_id):
+    # try:
+    #     post = Post.objects.get(id=slug)
+    #     if request.user == post.user:
+    #         if request.method == "POST":
+    #             body = request.POST["body"]
+    #             post = Post.objects.get(id=slug)
+    #             post.body = body
+    #             post.save()
+    #             return redirect("index")
 
-            else:
-                context = {
-                    'post': post
-                }
-                return render(request, "network/edit-post.html", context)
-        else:
-            return redirect("index")
+    #         else:
+    #             context = {
+    #                 'post': post
+    #             }
+    #             return render(request, "network/edit-post.html", context)
+    #     else:
+    #         return redirect("index")
 
-    except IntegrityError:
-        return redirect("index")
+    # except IntegrityError:
+    #     return redirect("index")
+    
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    # Check recipient emails
+    data = json.loads(request.body)
+    body = data.get("body", "")
+    post = Post.objects.get(id=post_id)
+    post.body = body
+    post.save()
+    return JsonResponse({"message": "Post updated successfully."}, status=201)
