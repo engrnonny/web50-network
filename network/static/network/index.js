@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function() {
     for(var i = 0; i < edit_btns.length; i++){
         edit_btns[i].addEventListener('click', (e) => edit_post(e));
     }        
-    document.querySelector('#edited-form').onsubmit = save_post();
 });
 
 function edit_post(e) {
@@ -15,42 +14,53 @@ function edit_post(e) {
             <input disabled class="form-control" hidden value="${post_id}" id="edited-post-id">
             <textarea autofocus class="form-control" type="text" name="edited-post" id="edited-post-body">${post_body}</textarea>  
         </div>
-        <input class="btn btn-primary" type="submit" value="Post">      
+        <input class="btn btn-primary" id="submit" type="submit" value="Post">     
+        <span><button class="btn btn-primary" id="cancel">cancel</button></span>     
     </form>`
     var posts = document.querySelectorAll('.post');
     for(var i = 0; i < posts.length; i++){
         posts[i].style.display = 'none';
     }
-    return false;
+    document.querySelector('#submit').addEventListener('click', save_post);
+    document.querySelector('#cancel').addEventListener('click', cancel(`${post_body}, ${post_id}`));
 }
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+function cancel(post_body, post_id) {
+    document.querySelector(`#body${post_id}`).innerHTML = post_body
+    var posts = document.querySelectorAll('.post');
+    for(var i = 0; i < posts.length; i++){
+        posts[i].style.display = 'block';
     }
-    return cookieValue;
 }
+
+// function getCookie(name) {
+//     let cookieValue = null;
+//     if (document.cookie && document.cookie !== '') {
+//         const cookies = document.cookie.split(';');
+//         for (let i = 0; i < cookies.length; i++) {
+//             const cookie = cookies[i].trim();
+//             // Does this cookie string begin with the name we want?
+//             if (cookie.substring(0, name.length + 1) === (name + '=')) {
+//                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                 break;
+//             }
+//         }
+//     }
+//     return cookieValue;
+// }
 
 function save_post() {    
     const body = document.querySelector('#edited-post-body').value;
+    console.log(body)
     const post_id = document.querySelector('#edited-post-id').value;
-    const csrftoken = getCookie('csrftoken');
-    const request = new Request(
-        `user/p/edit-post/${post_id}`,
-        {headers: {'X-CSRFToken': csrftoken}}
-    );
-    fetch(request, {
+    console.log(post_id)
+    // const csrftoken = getCookie('csrftoken');
+    // const request = new Request(
+    //     `user/p/edit-post/${post_id}`,
+    //     {headers: {'X-CSRFToken': csrftoken}}
+    // );
+    fetch(`/user/p/edit-post/${post_id}`, {
         method: 'POST',
-        mode: 'same-origin',
         body: JSON.stringify({
             body: body
         })

@@ -4,7 +4,7 @@
     {% if user.is_authenticated %}
         <h2>New Post</h2>
         <form action="{% url 'new-post' %}" method="post">
-            {% csrf_token %}
+            <!-- {% csrf_token %} -->
             <div class="form-group">
                 <textarea autofocus class="form-control" type="text" name="body" placeholder="Write your post here"></textarea>
             </div>
@@ -21,9 +21,6 @@
                     <div>
                         {{ post.body }}
                     </div>
-                    {% if post.user == user %}
-                        <a class="btn btn-primary" href="{% url 'edit-post' post.id %}">edit</a>
-                    {% endif %}
                 </div>
             {% endfor %}
             <nav aria-label="Page navigation example">

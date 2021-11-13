@@ -207,7 +207,7 @@ def following(request):
 # Edit Post
 # Edit Post
 # Edit Post
-@csrf_exempt
+# @csrf_exempt
 @login_required
 def edit_post(request, post_id):
     # try:
@@ -231,6 +231,23 @@ def edit_post(request, post_id):
     # except IntegrityError:
     #     return redirect("index")
     
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    post = Post.objects.get(id=post_id)
+    if post.user == request.user:
+        data = json.loads(request.body)
+        body = data.get("body", "")
+        post.body = body
+        post.save()
+        return JsonResponse({"message": "Post updated successfully."}, status=201)
+    else:
+        return redirect("index")
+
+# Like and Unlike Post
+# Like and Unlike Post
+# Like and Unlike Post
+def like_or_unlike(request, post_id):
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
 

@@ -26,14 +26,19 @@
         {% if posts %}
             {% for post in page_obj %}
                 <div>
-                    {% csrf_token %}
+                    <!-- {% csrf_token %} -->
                     <div>{{ post.user }} posted on {{ post.date_added }}</div>
                     <div id="body{{post.id}}">
                         {{ post.body }} 
                     </div>
+                    <div>
+                    {% if user%}
+                    </div>
                     {% if post.user == user %}
                     <!-- <a class="btn btn-primary post" href="{% url 'edit-post' post.id %}" onclick="" value="{{ post.id }}">edit</a> -->
-                    <div class="btn btn-primary post" id="{{ post.id }}">edit</div>
+                    <div class="btn btn-primary post" id="{{ post.id }}">
+                        edit
+                    </div>
                     {% endif %}
                 </div>
             {% endfor %}
