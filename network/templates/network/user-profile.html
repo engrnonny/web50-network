@@ -23,20 +23,32 @@
         </span>
     </div>
     <div>
-        {% if posts %}
+        {% if likes_posts %}
             {% for post in page_obj %}
                 <div>
                     <!-- {% csrf_token %} -->
-                    <div>{{ post.user }} posted on {{ post.date_added }}</div>
-                    <div id="body{{post.id}}">
-                        {{ post.body }} 
+                    <div>{{ post.post.user }} posted on {{ post.post.date_added }}</div>
+                    <div id="body{{post.post.id}}">
+                        {{ post.post.body }} 
                     </div>
                     <div>
-                    {% if user%}
+                        Likes: {{ post.likes|length }}
+                        <span>                            
+                            <a class="like" href="{% url 'like-or-unlike' post.post.id %}" id="post-{{ post.post.id }}">
+                                {% if user in post.likes %}
+                                    Unlike
+                                {% else %}
+                                    Like
+                                {% endif %}
+                            </a>   
+                            <span hidden id="post-{{ post.post.id }}-hidden">
+                                {{ post.post.id }}
+                            </span>                         
+                        </span>
                     </div>
-                    {% if post.user == user %}
-                    <!-- <a class="btn btn-primary post" href="{% url 'edit-post' post.id %}" onclick="" value="{{ post.id }}">edit</a> -->
-                    <div class="btn btn-primary post" id="{{ post.id }}">
+                    {% if post.post.user == user %}
+                    <!-- <a class="btn btn-primary post" href="{% url 'edit-post' post.post.id %}" onclick="" value="{{ post.id }}">edit</a> -->
+                    <div class="btn btn-primary post" id="{{ post.post.id }}">
                         edit
                     </div>
                     {% endif %}

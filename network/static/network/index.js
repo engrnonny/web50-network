@@ -2,6 +2,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var edit_btns = document.querySelectorAll('.post');
     for(var i = 0; i < edit_btns.length; i++){
         edit_btns[i].addEventListener('click', (e) => edit_post(e));
+    }   
+    var like_btns = document.querySelectorAll('.like');
+    for(var i = 0; i < like_btns.length; i++){
+        like_btns[i].addEventListener('click', (e) => like_post(e));
     }        
 });
 
@@ -25,6 +29,41 @@ function edit_post(e) {
     document.querySelector('#cancel').addEventListener('click', cancel(`${post_body}, ${post_id}`));
 }
 
+function like_post(e) {
+    e = window.event;
+    let target_id = e.target.id
+    let post_id = document.querySelector(`#${target_id}-hidden`).innerHTML.trim();
+    console.log(post_id);
+    
+    fetch(`/user/p/l/${post_id}`, {
+        method: "POST",
+        body: JSON.stringify({
+            post_id: post_id
+        })
+    })
+        .then(response => response.json())
+            .then(result => {
+            if ("message" in result) {
+                console.log(result)
+                console.log(e.target.innerHTML)
+                if (e.target.innerHTML == "Unlike") {
+                    e.target.innerHTML = "Like"
+                }
+                else if (e.target.innerHTML == "Like") {
+                    e.target.innerHTML = "Unlike"
+                }
+            }
+    
+            if ("error" in result) {
+                document.querySelector('#to-text-error-message').innerHTML = result['error']
+    
+            }
+            })
+            .catch(error => {
+                console.log(error);
+            });
+}
+
 function cancel(post_body, post_id) {
     document.querySelector(`#body${post_id}`).innerHTML = post_body
     var posts = document.querySelectorAll('.post');
@@ -39,7 +78,6 @@ function cancel(post_body, post_id) {
 //         const cookies = document.cookie.split(';');
 //         for (let i = 0; i < cookies.length; i++) {
 //             const cookie = cookies[i].trim();
-//             // Does this cookie string begin with the name we want?
 //             if (cookie.substring(0, name.length + 1) === (name + '=')) {
 //                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
 //                 break;
@@ -76,8 +114,6 @@ function save_post() {
             }
     
             if ("error" in result) {
-                // There was an error in sending the email
-                // Display the error next to the "To:"
                 document.querySelector('#to-text-error-message').innerHTML = result['error']
     
             }

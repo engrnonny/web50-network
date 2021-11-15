@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import HttpResponse, render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -100,9 +100,17 @@ def user_profile(request, slug):
     if profile_user:
         try:
             posts = Post.objects.filter(user=profile_user).order_by('-date_added')
-
+            likes_posts = []
+            for post in posts:
+                likes = User.objects.filter(likes__id=post.id)
+                new_object = {
+                    'likes': likes,
+                    'post': post
+                }
+                likes_posts.append(new_object)
+            print(likes_posts[0]['likes'])
             
-            paginator = Paginator(posts, 10) 
+            paginator = Paginator(likes_posts, 10) 
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
 
@@ -116,7 +124,7 @@ def user_profile(request, slug):
                 'followers': followers,
                 'following': following,
                 'page_obj': page_obj,
-                'posts': posts,
+                'likes_posts': likes_posts,
                 'profile_user': profile_user
             }
         except IntegrityError:
@@ -240,23 +248,24 @@ def edit_post(request, post_id):
         body = data.get("body", "")
         post.body = body
         post.save()
-        return JsonResponse({"message": "Post updated successfully."}, status=201)
+        return JsonResponse({"message": "Post updated successfully."}, status=202)
     else:
         return redirect("index")
 
 # Like and Unlike Post
 # Like and Unlike Post
 # Like and Unlike Post
+# @csrf_exempt
+@login_required
 def like_or_unlike(request, post_id):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required."}, status=400)
-
-    post = Post.objects.get(id=post_id)
-    if post.user == request.user:
-        data = json.loads(request.body)
-        body = data.get("body", "")
-        post.body = body
-        post.save()
+    try:
+        post = Post.objects.get(id=post_id)
+        user_in_post_likes = User.objects.filter(likes__id=post.id, id=request.user.id)
+        if user_in_post_likes:
+            post.likes.remove(request.user)
+        else:
+            post.likes.add(request.user)
         return JsonResponse({"message": "Post updated successfully."}, status=201)
-    else:
-        return redirect("index")
+    
+    except IntegrityError:
+        return JsonResponse({"error": "Post not found."}, status=400)
