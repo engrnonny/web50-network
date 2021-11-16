@@ -33,35 +33,19 @@ function like_post(e) {
     e = window.event;
     let target_id = e.target.id
     let post_id = document.querySelector(`#${target_id}-hidden`).innerHTML.trim();
-    console.log(post_id);
     
     fetch(`/user/p/l/${post_id}`, {
-        method: "POST",
+        method: 'PUT',
         body: JSON.stringify({
             post_id: post_id
         })
     })
-        .then(response => response.json())
-            .then(result => {
-            if ("message" in result) {
-                console.log(result)
-                console.log(e.target.innerHTML)
-                if (e.target.innerHTML == "Unlike") {
-                    e.target.innerHTML = "Like"
-                }
-                else if (e.target.innerHTML == "Like") {
-                    e.target.innerHTML = "Unlike"
-                }
-            }
-    
-            if ("error" in result) {
-                document.querySelector('#to-text-error-message').innerHTML = result['error']
-    
-            }
-            })
-            .catch(error => {
-                console.log(error);
-            });
+    if (e.target.innerHTML == "Unlike") {
+        e.target.innerHTML = "Like"
+    }
+    else if (e.target.innerHTML == "Like") {
+        e.target.innerHTML = "Unlike"
+    }
 }
 
 function cancel(post_body, post_id) {

@@ -14,10 +14,22 @@ from .models import *
 
 def index(request):
     posts = Post.objects.all().order_by('-date_added')
-    paginator = Paginator(posts, 10) 
+    likes_posts = []
+    for post in posts:
+        likes = User.objects.filter(likes__id=post.id)
+        new_object = {
+            'likes': likes,
+            'post': post
+        }
+        likes_posts.append(new_object)
+    print(likes_posts[0]['likes'])
+
+    paginator = Paginator(likes_posts, 10) 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
     context = {
+        'likes_posts': likes_posts,
         'page_obj': page_obj,
         'posts': posts
     }
@@ -258,14 +270,17 @@ def edit_post(request, post_id):
 # @csrf_exempt
 @login_required
 def like_or_unlike(request, post_id):
-    try:
-        post = Post.objects.get(id=post_id)
-        user_in_post_likes = User.objects.filter(likes__id=post.id, id=request.user.id)
-        if user_in_post_likes:
-            post.likes.remove(request.user)
-        else:
-            post.likes.add(request.user)
-        return JsonResponse({"message": "Post updated successfully."}, status=201)
-    
-    except IntegrityError:
-        return JsonResponse({"error": "Post not found."}, status=400)
+    if request.method == "PUT":
+        try:
+            post = Post.objects.get(id=post_id)
+            user_in_post_likes = User.objects.filter(likes__id=post.id, id=request.user.id)
+            if user_in_post_likes:
+                post.likes.remove(request.user)
+            else:
+                post.likes.add(request.user)
+                return HttpResponse(status=204)
+        
+        except IntegrityError:
+            return JsonResponse({"error": "Post not found."}, status=400)
+    else:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
