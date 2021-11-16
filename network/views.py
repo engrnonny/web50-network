@@ -22,7 +22,6 @@ def index(request):
             'post': post
         }
         likes_posts.append(new_object)
-    print(likes_posts[0]['likes'])
 
     paginator = Paginator(likes_posts, 10) 
     page_number = request.GET.get('page')
@@ -205,12 +204,22 @@ def following(request):
     if Follower.objects.filter(user=request.user).exists():
         following_object = Follower.objects.get(user=request.user)
         followings = User.objects.filter(following__id=following_object.id)
-        print(followings)
         posts = []
+        all_following_posts = []
+
         for following in followings:
             following_posts = Post.objects.filter(user=following)
-            for post in following_posts:
-                posts.append(post)
+            for following_post in following_posts:
+                all_following_posts.append(following_post)
+
+        all_posts_sorted = sorted(all_following_posts, key=lambda x: x.date_added, reverse=True)
+        for post in all_posts_sorted:
+            likes = User.objects.filter(likes__id=post.id)
+            new_object = {
+                'likes': likes,
+                'post': post
+            }
+            posts.append(new_object)
         
         paginator = Paginator(posts, 10) 
         page_number = request.GET.get('page')

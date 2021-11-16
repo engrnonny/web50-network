@@ -3,22 +3,29 @@
 <main>
     {% if user.is_authenticated %}
         <h2>New Post</h2>
+        <br>
         <form action="{% url 'new-post' %}" method="post">
             <!-- {% csrf_token %} -->
             <div class="form-group">
-                <textarea autofocus class="form-control" type="text" name="body" placeholder="Write your post here"></textarea>
+                <textarea class="form-control" type="text" name="body" placeholder="Write your post here"></textarea>
             </div>
             <input class="btn btn-primary btn-block" type="submit" value="Post">
         </form>
     {% endif %}
-<br>
+    <br>
+    <br>
+    <br>
+
     <div>
         {% if likes_posts %}
             <h2>All Posts</h2>
+            <br>
             {% for post in page_obj %}
             <div class="card border-primary mb-3">
                 <!-- {% csrf_token %} -->
-                <h5 class="card-header card-title">{{ post.post.user }}</h5>
+                <h5 class="card-header card-title">
+                    <a href="{% url 'user-profile' post.post.user %}">{{ post.post.user }}</a>
+                </h5>
                 <div class="card-body">
                     <p class="card-text" id="body{{post.post.id}}">
                         {{ post.post.body }} 
